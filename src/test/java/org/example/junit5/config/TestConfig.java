@@ -1,0 +1,51 @@
+package org.example.junit5.config;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+public class TestConfig {
+    private static final String DEFAULT_CONFIG = "/config.properties";
+    private static final String ENV_CONFIG_PATTERN = "/config.%s.properties";
+
+    private static final Properties properties = new Properties();
+
+    static {
+        loadDefaults();
+        loadEnvironmentSpecific();
+        ovverideWithSystemProperties();
+    }
+
+    private static void loadDefaults() {
+        try (InputStream input = TestConfig.class.getResourceAsStream(DEFAULT_CONFIG)){
+            if (input != null) {
+                properties.load(input);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Не удалось загрузить конфигурацию по умолчанию", e);
+        }
+    }
+
+    private static void loadEnvironmentSpecific(){
+        String env = System.getProperty("env");
+        if (env == null || env.isBlank()) {
+            return;
+        }
+
+        String resourcePath = ENV_CONFIG_PATTERN.formatted(env);
+        try (InputStream input = TestConfig.class.getResourceAsStream(resourcePath)) {
+            if (input != null) {
+                properties.load(input);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Не удалось загрузить конфигурацию для окружения: " + env, e);
+        }
+    }
+
+    private static  void ovverideWithSystemProperties() {
+        System.getProperties().forEach((key, value) -> properties.put(key,value));
+    }
+
+}
