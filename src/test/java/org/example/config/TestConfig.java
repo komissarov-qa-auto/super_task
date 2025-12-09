@@ -1,6 +1,4 @@
-package org.example.junit5.config;
-
-import org.junit.jupiter.api.Test;
+package org.example.config;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,11 +13,11 @@ public class TestConfig {
     static {
         loadDefaults();
         loadEnvironmentSpecific();
-        ovverideWithSystemProperties();
+        overrideWithSystemProperties();
     }
 
     private static void loadDefaults() {
-        try (InputStream input = TestConfig.class.getResourceAsStream(DEFAULT_CONFIG)){
+        try (InputStream input = TestConfig.class.getResourceAsStream(DEFAULT_CONFIG)) {
             if (input != null) {
                 properties.load(input);
             }
@@ -28,7 +26,7 @@ public class TestConfig {
         }
     }
 
-    private static void loadEnvironmentSpecific(){
+    private static void loadEnvironmentSpecific() {
         String env = System.getProperty("env");
         if (env == null || env.isBlank()) {
             return;
@@ -44,8 +42,29 @@ public class TestConfig {
         }
     }
 
-    private static  void ovverideWithSystemProperties() {
-        System.getProperties().forEach((key, value) -> properties.put(key,value));
+    private static void overrideWithSystemProperties() {
+        properties.putAll(System.getProperties());
+    }
+
+    public static String getBaseUrl() {
+        return properties.getProperty("baseUrl", "https://www.saucedemo.com");
+    }
+
+    public static String getBrowser() {
+        return properties.getProperty("browser", "chrome");
+    }
+
+    public static boolean isHeadless() {
+        return Boolean.parseBoolean(properties.getProperty("headless", "true"));
+    }
+
+    public static long getImplicitTimeout() {
+        return Long.parseLong(properties.getProperty("implicitTimeout", "5"));
+    }
+
+
+    public static long getPageLoadTimeout() {
+        return Long.parseLong(properties.getProperty("pageLoadTimeout", "30"));
     }
 
 }
